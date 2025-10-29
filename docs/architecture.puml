@@ -1,0 +1,49 @@
+@startuml
+skinparam wrapWidth 200
+skinparam maxMessageSize 120
+
+rectangle "Reviewer (React)" as Reviewer {
+  () "Mic/Text" as Mic
+  () "WS client" as RWS
+}
+
+rectangle "Participant (React)" as Participant {
+  () "WS client" as PWS
+  () "Speech Synthesis" as TTS
+}
+
+rectangle "Server (Fastify)" as Server {
+  () "/health"
+  () "WS /ws"
+  () "OpenAI Client"
+}
+
+cloud "Redis" as Redis {
+  () "Stream followups:stream"
+  () "Stream questions:stream"
+  () "Pub/Sub questions:live"
+  () "Dedup keys"
+}
+
+Reviewer -[hidden]- Participant
+Server -[hidden]- Redis
+
+Mic -> RWS : items (comma-separated)
+RWS -> Server : WS event followup:create(items)
+Server -> Redis : XADD followups:stream
+Server -> Server : Call OpenAI(Chat Completions)
+Server -> Redis : XADD questions:stream
+Server -> Redis : PUBLISH questions:live
+Server -> PWS : WS agent:questions(text, streamId)
+Redis --> PWS : (optional) via server pub/sub handler
+PWS -> TTS : speak(text)
+
+== Reconnect/Replay ==
+Participant -> Server : WS replay:since(lastId)
+Server -> Redis : XREAD questions:stream since lastId
+Redis --> Server : messages in order
+Server --> Participant : WS agent:questions(text, streamId)
+
+@enduml
+
+

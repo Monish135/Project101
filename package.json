@@ -1,0 +1,27 @@
+{
+  "name": "mini-redis-puml-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Mini-Project: Redis + PUML Edition monorepo",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "server:dev": "pnpm --filter @mini/server dev",
+    "reviewer:dev": "pnpm --filter @mini/reviewer dev",
+    "participant:dev": "pnpm --filter @mini/participant dev"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "turbo": "^2.2.2",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.24"
+  }
+}
